@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: tengalongview
+      POSTGRES_USER: tengalongview
+      POSTGRES_PASSWORD: tengalongview
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tengalongview -d tengalongview"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    volumes:
+      - tengalongview_pg:/var/lib/postgresql/data
+
+  app:
+    build: .
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgres://tengalongview:tengalongview@db:5432/tengalongview
+      USE_OPEN_WEIGHTS_LLM: "false"
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: qwen2.5:3b
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+
+volumes:
+  tengalongview_pg:

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TengaLongView</title>
+<style>
+:root{font-family:Inter,system-ui,sans-serif;color:#10233d;background:#f5f8fc}body{margin:0}main{max-width:1050px;margin:auto;padding:32px}.hero{background:white;border:1px solid #dbe4ef;border-radius:18px;padding:26px;margin-bottom:20px}.grid{display:grid;grid-template-columns:1fr 1.35fr;gap:20px}.card{background:white;border:1px solid #dbe4ef;border-radius:16px;padding:20px}label{display:block;font-weight:700;margin:12px 0 6px}input,select,button,textarea{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid #bdcad8;font:inherit}button{border:0;background:#164e9b;color:white;font-weight:800;cursor:pointer;margin-top:14px}.secondary{background:#44566c}.danger{background:#8b2530}.event{border-left:4px solid #164e9b;background:#f6f9fd;padding:10px 12px;margin:10px 0}.warning{border-color:#a66b00}.blocked{border-color:#8b2530}.sources{font-family:ui-monospace,monospace;font-size:.9rem;word-break:break-word}.gate{border:2px solid #f0bd59;background:#fff8e8;padding:14px;border-radius:12px;margin-top:16px}.small{color:#597087;font-size:.92rem}@media(max-width:800px){.grid{grid-template-columns:1fr}}</style>
+</head>
+<body><main>
+<section class="hero"><h1>TengaLongView</h1><p>See the pattern before the learner falls behind.</p><p class="small">Synthetic demo only. The agent surfaces sourced patterns; a teacher decides.</p></section>
+<div class="grid">
+<section class="card"><h2>Teacher request</h2>
+<label>Learner</label><select id="learner"><option>STU-001</option><option>STU-002</option><option>STU-003</option></select>
+<label>Subject</label><input id="subject" value="Mathematics" />
+<button id="run">Update longitudinal profile</button>
+<div class="gate"><strong>Human-in-the-loop:</strong> no learner profile update can be committed until a named teacher approves, modifies, or rejects it.</div>
+</section>
+<section class="card"><h2>Agent activity</h2><div id="status" class="small">Ready.</div><div id="events"></div><div id="decision" hidden><label>Teacher name</label><input id="teacher" placeholder="Named teacher"/><button id="approve">Approve update</button><button id="reject" class="danger">Reject</button></div></section>
+</div>
+</main>
+<script>
+let draft=null;
+const status=document.querySelector('#status'), events=document.querySelector('#events'), decision=document.querySelector('#decision');
+function show(run){events.innerHTML=''; if(!Array.isArray(run.events)){events.innerHTML=`<div class="event blocked"><strong>Error</strong><pre>${escapeHtml(JSON.stringify(run,null,2))}</pre></div>`; draft=null; decision.hidden=true; return;} for(const e of run.events){const d=document.createElement('div');d.className='event '+e.status; d.innerHTML=`<strong>${e.step}</strong>${e.tool?` — <code>${e.tool}</code>`:''}<pre>${escapeHtml(JSON.stringify(e.detail,null,2))}</pre>`;events.appendChild(d)} draft=run.draft||null;decision.hidden=!draft;}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+document.querySelector('#run').onclick=async()=>{status.textContent='Agent running…';decision.hidden=true;const r=await fetch('/api/agent/run',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({learnerId:document.querySelector('#learner').value,subject:document.querySelector('#subject').value})});const j=await r.json();status.textContent=r.ok?'Agent paused at human gate.':'Run failed.';show(j)};
+async function decide(which){if(!draft)return;const teacher=document.querySelector('#teacher').value.trim();if(!teacher)return alert('Enter the named teacher approving or rejecting this update.');const r=await fetch('/api/agent/decision',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({draftId:draft.id,teacherName:teacher,decision:which})});const j=await r.json();status.textContent=JSON.stringify(j);if(r.ok)decision.hidden=true}
+document.querySelector('#approve').onclick=()=>decide('approved');document.querySelector('#reject').onclick=()=>decide('rejected');
+</script></body></html>

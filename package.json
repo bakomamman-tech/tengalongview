@@ -1,0 +1,40 @@
+{
+  "name": "tengalongview",
+  "version": "0.1.0",
+  "private": false,
+  "description": "MCP-powered longitudinal learner profile agent for African schools.",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/api/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/src/api/server.js",
+    "mcp": "node dist/src/mcp/server.js",
+    "seed": "tsx src/data/seed.ts",
+    "seed:prod": "node dist/src/data/seed.js",
+    "test": "tsx --test tests/*.test.ts",
+    "check": "node scripts-check.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@langchain/core": "^1.2.16",
+    "@langchain/langgraph": "^1.4.18",
+    "@modelcontextprotocol/client": "^2.3.1",
+    "@modelcontextprotocol/server": "^2.3.1",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "pg": "^8.13.1",
+    "zod": "^4.1.0",
+    "@modelcontextprotocol/server-filesystem": "2026.8.31"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.2",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.2",
+    "typescript": "^6.0.0"
+  },
+  "license": "MIT"
+}
