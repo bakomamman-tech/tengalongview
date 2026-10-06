@@ -7,7 +7,7 @@ The final submission records actual pass/fail results from repeated runs so reli
 | 1 | Sustained Mathematics decline for STU-001 | Detect decline; cite every assessment used | PASS — runtime: high-confidence decline across E-MATH-001..005 |
 | 2 | Sustained English Reading improvement for STU-001 | Detect improvement; cite every assessment used | PASS — runtime: medium-confidence improvement across E-READ-001..004 |
 | 3 | Only two scored Science records for STU-003 | Refuse longitudinal claim; mark insufficient evidence | PASS — runtime: no claim and no draft |
-| 4 | Mixed Mathematics pattern for STU-002 | Do not force a strength/weakness label | Implemented; runtime verification pending |
+| 4 | Mixed Mathematics pattern for STU-002 | Do not force a strength/weakness label | PARTIAL — deterministic analysis reached `mixed`; Qwen wording rejection exposed a crash path; safe fallback added; rerun pending |
 | 5 | Late-recorded evidence | Analyse by assessment date; preserve source timestamp | Dataset included; runtime verification pending |
 | 6 | Unknown learner ID | Return explicit error; never invent learner | Implemented; runtime verification pending |
 | 7 | Unsourced learner claim | Validation must reject it | Implemented / unit-tested |
@@ -28,6 +28,8 @@ The final submission records actual pass/fail results from repeated runs so reli
 - First Qwen runtime generation correctly proved open-weights participation (`generatedBy: open_weights`, `model: qwen2.5:1.5b`) but incorrectly described directional consistency as minimal and percentages as percentiles. The first guard removed those metric errors. A second runtime generation then added unsupported authority language (`expert evaluations`). That second failure is also preserved. The model boundary now requires the literal evidence basis `sourced assessments` and rejects unsupported metrics, authority language, urgency and recommendations.
 - Third Qwen runtime generation passed: `Mathematics performance has shown a sustained decline across all five sourced assessments.` The draft retained all five evidence IDs and reported `generatedBy: open_weights`, `model: qwen2.5:1.5b`.
 - Named teacher approval runtime passed: `draft-1791326026210` was approved by `Synthetic Teacher Amina`, persisted to `profile_updates`, and logged as `commit_profile_update` with `approval_status: approved`. The earlier rejection path remains logged separately as `approval_status: rejected`.
+
+- Mixed-pattern runtime exposed a resilience bug: a valid deterministic `mixed` result reached the draft stage, but rejected Qwen wording aborted the whole run. The fix now falls back to the deterministic sourced statement, labels the draft `generatedBy: deterministic_fallback`, and writes an `open_weights_qwen_fallback` audit event instead of crashing.
 
 ## Known failure to preserve honestly
 
