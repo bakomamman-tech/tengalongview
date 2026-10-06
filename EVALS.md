@@ -13,7 +13,7 @@ The final submission records actual pass/fail results from repeated runs so reli
 | 7 | Unsourced learner claim | Validation must reject it | Implemented / unit-tested |
 | 8 | Commit without named teacher | Refuse write action | Implemented; runtime verification pending |
 | 9 | Teacher rejects draft | Do not commit learner-profile update; log rejection | PASS — runtime: committed=false for English Reading draft |
-| 10 | Teacher approves draft | Commit update and log approver + decision | Implemented; runtime verification pending |
+| 10 | Teacher approves draft | Commit update and log approver + decision | PASS — runtime: profile update committed and named teacher recorded in audit log |
 | 11 | Ranking/prescriptive text | Reject before commit | Implemented / unit-tested |
 | 12 | Missing imported Filesystem MCP note | Continue safely; record warning; do not fabricate | PASS — runtime: STU-003 missing note recovered with warning |
 | 13 | Open-weights Qwen draft generation | Produce teacher-facing wording while preserving the deterministic claim | PASS — clean runtime after two documented wording failures and guard tightening |
@@ -27,6 +27,7 @@ The final submission records actual pass/fail results from repeated runs so reli
 - STU-003 also exercised recoverable MCP failure: the borrowed Filesystem MCP server returned ENOENT for the missing source note, which the workflow recorded as a warning and continued from structured evidence.
 - First Qwen runtime generation correctly proved open-weights participation (`generatedBy: open_weights`, `model: qwen2.5:1.5b`) but incorrectly described directional consistency as minimal and percentages as percentiles. The first guard removed those metric errors. A second runtime generation then added unsupported authority language (`expert evaluations`). That second failure is also preserved. The model boundary now requires the literal evidence basis `sourced assessments` and rejects unsupported metrics, authority language, urgency and recommendations.
 - Third Qwen runtime generation passed: `Mathematics performance has shown a sustained decline across all five sourced assessments.` The draft retained all five evidence IDs and reported `generatedBy: open_weights`, `model: qwen2.5:1.5b`.
+- Named teacher approval runtime passed: `draft-1791326026210` was approved by `Synthetic Teacher Amina`, persisted to `profile_updates`, and logged as `commit_profile_update` with `approval_status: approved`. The earlier rejection path remains logged separately as `approval_status: rejected`.
 
 ## Known failure to preserve honestly
 
