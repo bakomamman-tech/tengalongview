@@ -39,8 +39,8 @@ const planNode = async (state: typeof AgentState.State) => ({
     "Retrieve the learner's historical evidence",
     "Analyse the requested subject across terms and years",
     "Check whether the evidence supports a defensible longitudinal claim",
-    "Draft a sourced profile update",
-    "Pause for a named teacher to approve, modify, or reject",
+    "Draft a sourced profile update if the evidence is sufficient",
+    "Pause for a named teacher to approve, modify, or reject any draft",
   ],
   events: [{ step: "plan", status: "ok" as const, detail: `Plan created for ${state.learnerId} / ${state.subject}.` }],
 });
@@ -107,6 +107,7 @@ const draftNode = async (state: typeof AgentState.State) => {
 
   return {
     draft,
+    requiresHumanDecision: true,
     events: [
       { step: "draft", tool: "draft_profile_update", status: "ok" as const, detail: draft },
       {
@@ -119,6 +120,7 @@ const draftNode = async (state: typeof AgentState.State) => {
 };
 
 const insufficientNode = async () => ({
+  requiresHumanDecision: false,
   events: [{
     step: "draft",
     status: "blocked" as const,
@@ -147,7 +149,7 @@ const graph = new StateGraph(AgentState)
   .compile();
 
 export async function runProfileUpdate(learnerId: string, subject: string): Promise<AgentRun> {
-  const state = await graph.invoke({ learnerId, subject, requiresHumanDecision: true });
+  const state = await graph.invoke({ learnerId, subject, requiresHumanDecision: false });
 
   return {
     learnerId: state.learnerId,
@@ -155,6 +157,6 @@ export async function runProfileUpdate(learnerId: string, subject: string): Prom
     plan: state.plan ?? [],
     events: state.events ?? [],
     draft: state.draft,
-    requiresHumanDecision: true,
+    requiresHumanDecision: state.requiresHumanDecision ?? Boolean(state.draft),
   };
 }
