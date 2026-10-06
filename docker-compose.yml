@@ -22,7 +22,7 @@ services:
       DATABASE_URL: postgres://tengalongview:tengalongview@db:5432/tengalongview
       USE_OPEN_WEIGHTS_LLM: "false"
       OLLAMA_BASE_URL: http://host.docker.internal:11434
-      OLLAMA_MODEL: qwen2.5:3b
+      OLLAMA_MODEL: qwen2.5:1.5b
     depends_on:
       db:
         condition: service_healthy
