@@ -36,3 +36,12 @@ The final submission records actual pass/fail results from repeated runs so reli
 ## Run-to-run variation
 
 When the open-weights model is enabled, we execute the same synthesis task multiple times and record whether the factual claim, cited evidence set and safety boundary remain stable. The deterministic pattern result is the source of truth; LLM variation may affect wording only.
+
+## Automated regression suite
+
+Latest Docker runtime test:
+
+- 3 tests executed
+- 3 passed
+- 0 failed
+- Covered sustained-decline detection with evidence citations, insufficient-evidence refusal, and prohibited ranking/prescriptive-language blocking.
