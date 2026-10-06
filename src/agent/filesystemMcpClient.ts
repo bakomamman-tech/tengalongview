@@ -28,8 +28,18 @@ export async function readImportedSourceNote(learnerId: string): Promise<{ path:
   const filePath = path.join(allowedDir, `${learnerId}-source-note.txt`);
   const client = await getFilesystemMcpClient();
   const result = await client.callTool({ name: "read_text_file", arguments: { path: filePath } });
-  if (result.isError) throw new Error(`Filesystem MCP read failed: ${JSON.stringify(result.content)}`);
-  const item = Array.isArray(result.content) ? result.content.find((x: any) => x.type === "text") : undefined;
-  if (!item || typeof item.text !== "string") throw new Error("Filesystem MCP returned no text payload.");
+
+  if (result.isError) {
+    throw new Error(`Filesystem MCP read failed: ${JSON.stringify(result.content)}`);
+  }
+
+  const item = Array.isArray(result.content)
+    ? result.content.find((block) => block.type === "text")
+    : undefined;
+
+  if (!item || item.type !== "text" || typeof item.text !== "string") {
+    throw new Error("Filesystem MCP returned no text payload.");
+  }
+
   return { path: filePath, text: item.text };
 }
