@@ -127,23 +127,23 @@ const insufficientNode = async () => ({
 });
 
 const graph = new StateGraph(AgentState)
-  .addNode("plan", planNode)
+  .addNode("plan_step", planNode)
   .addNode("import_source", importedSourceNode)
   .addNode("retrieve", retrieveNode)
   .addNode("analyse", analyseNode)
-  .addNode("draft", draftNode)
+  .addNode("draft_step", draftNode)
   .addNode("insufficient", insufficientNode)
-  .addEdge(START, "plan")
-  .addEdge("plan", "import_source")
+  .addEdge(START, "plan_step")
+  .addEdge("plan_step", "import_source")
   .addEdge("import_source", "retrieve")
   .addEdge("retrieve", "analyse")
   .addConditionalEdges(
     "analyse",
-    (state) => state.pattern?.kind === "insufficient_evidence" ? "insufficient" : "draft",
-    ["insufficient", "draft"],
+    (state) => state.pattern?.kind === "insufficient_evidence" ? "insufficient" : "draft_step",
+    ["insufficient", "draft_step"],
   )
   .addEdge("insufficient", END)
-  .addEdge("draft", END)
+  .addEdge("draft_step", END)
   .compile();
 
 export async function runProfileUpdate(learnerId: string, subject: string): Promise<AgentRun> {
