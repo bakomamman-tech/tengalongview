@@ -21,13 +21,16 @@ export interface AgentRun {
 const AgentState = Annotation.Root({
   learnerId: Annotation<string>(),
   subject: Annotation<string>(),
-  plan: Annotation<string[]>({ default: () => [] }),
-  events: Annotation<AgentEvent[]>({ reducer: (left, right) => left.concat(right), default: () => [] }),
+  plan: Annotation<string[]>(),
+  events: Annotation<AgentEvent[]>({
+    reducer: (left, right) => left.concat(right),
+    default: () => [],
+  }),
   importedSource: Annotation<any>(),
   history: Annotation<any>(),
   pattern: Annotation<any>(),
   draft: Annotation<any>(),
-  requiresHumanDecision: Annotation<boolean>({ default: () => true }),
+  requiresHumanDecision: Annotation<boolean>(),
 });
 
 const planNode = async (state: typeof AgentState.State) => ({
@@ -68,27 +71,59 @@ const importedSourceNode = async (state: typeof AgentState.State) => {
 
 const retrieveNode = async (state: typeof AgentState.State) => {
   const history = await callJsonTool("get_learner_history", { learnerId: state.learnerId });
-  return { history, events: [{ step: "retrieve", tool: "get_learner_history", status: "ok" as const, detail: { learner: history.learner, evidenceCount: history.evidence?.length ?? 0 } }] };
+  return {
+    history,
+    events: [{
+      step: "retrieve",
+      tool: "get_learner_history",
+      status: "ok" as const,
+      detail: { learner: history.learner, evidenceCount: history.evidence?.length ?? 0 },
+    }],
+  };
 };
 
 const analyseNode = async (state: typeof AgentState.State) => {
-  const pattern = await callJsonTool("analyse_longitudinal_pattern", { learnerId: state.learnerId, subject: state.subject });
-  return { pattern, events: [{ step: "analyse", tool: "analyse_longitudinal_pattern", status: pattern.kind === "insufficient_evidence" ? "warning" as const : "ok" as const, detail: pattern }] };
+  const pattern = await callJsonTool("analyse_longitudinal_pattern", {
+    learnerId: state.learnerId,
+    subject: state.subject,
+  });
+
+  return {
+    pattern,
+    events: [{
+      step: "analyse",
+      tool: "analyse_longitudinal_pattern",
+      status: pattern.kind === "insufficient_evidence" ? "warning" as const : "ok" as const,
+      detail: pattern,
+    }],
+  };
 };
 
 const draftNode = async (state: typeof AgentState.State) => {
-  const draft = await callJsonTool("draft_profile_update", { learnerId: state.learnerId, subject: state.subject });
+  const draft = await callJsonTool("draft_profile_update", {
+    learnerId: state.learnerId,
+    subject: state.subject,
+  });
+
   return {
     draft,
     events: [
       { step: "draft", tool: "draft_profile_update", status: "ok" as const, detail: draft },
-      { step: "human_gate", status: "blocked" as const, detail: "Waiting for named teacher decision. No profile change has been committed." },
+      {
+        step: "human_gate",
+        status: "blocked" as const,
+        detail: "Waiting for named teacher decision. No profile change has been committed.",
+      },
     ],
   };
 };
 
 const insufficientNode = async () => ({
-  events: [{ step: "draft", status: "blocked" as const, detail: "Insufficient evidence: no strength/struggle claim will be drafted." }],
+  events: [{
+    step: "draft",
+    status: "blocked" as const,
+    detail: "Insufficient evidence: no strength/struggle claim will be drafted.",
+  }],
 });
 
 const graph = new StateGraph(AgentState)
@@ -102,13 +137,18 @@ const graph = new StateGraph(AgentState)
   .addEdge("plan", "import_source")
   .addEdge("import_source", "retrieve")
   .addEdge("retrieve", "analyse")
-  .addConditionalEdges("analyse", (state) => state.pattern?.kind === "insufficient_evidence" ? "insufficient" : "draft", ["insufficient", "draft"])
+  .addConditionalEdges(
+    "analyse",
+    (state) => state.pattern?.kind === "insufficient_evidence" ? "insufficient" : "draft",
+    ["insufficient", "draft"],
+  )
   .addEdge("insufficient", END)
   .addEdge("draft", END)
   .compile();
 
 export async function runProfileUpdate(learnerId: string, subject: string): Promise<AgentRun> {
   const state = await graph.invoke({ learnerId, subject, requiresHumanDecision: true });
+
   return {
     learnerId: state.learnerId,
     subject: state.subject,
