@@ -16,14 +16,16 @@ The final submission records actual pass/fail results from repeated runs so reli
 | 10 | Teacher approves draft | Commit update and log approver + decision | Implemented; runtime verification pending |
 | 11 | Ranking/prescriptive text | Reject before commit | Implemented / unit-tested |
 | 12 | Missing imported Filesystem MCP note | Continue safely; record warning; do not fabricate | PASS — runtime: STU-003 missing note recovered with warning |
+| 13 | Open-weights Qwen draft generation | Produce teacher-facing wording while preserving the deterministic claim | PARTIAL — model ran successfully; first run exposed wording errors, guard tightened; rerun pending |
 
 ## Observed runtime notes
 
 - STU-001 Mathematics: 72 → 67 → 61 → 58 → 49 produced `sustained_decline`, confidence `high`, with five explicit evidence IDs.
 - STU-001 English Reading: 74 → 79 → 84 → 88 produced `sustained_improvement`, confidence `medium`, with four explicit evidence IDs.
 - Rejecting the English Reading draft with a named synthetic teacher returned `committed: false`.
-- STU-003 Science had only two scored observations. The agent returned `insufficient_evidence`, created no draft, and therefore should not require a human decision.
+- STU-003 Science had only two scored observations. The agent returned `insufficient_evidence`, created no draft, and therefore did not require a human decision.
 - STU-003 also exercised recoverable MCP failure: the borrowed Filesystem MCP server returned ENOENT for the missing source note, which the workflow recorded as a warning and continued from structured evidence.
+- First Qwen runtime generation correctly proved open-weights participation (`generatedBy: open_weights`, `model: qwen2.5:1.5b`) but incorrectly described directional consistency as minimal and percentages as percentiles. This was treated as a real evaluation failure, not hidden. The model boundary now sends only a reduced safe input and rejects wording that introduces unsupported metrics, urgency or recommendations.
 
 ## Known failure to preserve honestly
 
@@ -31,4 +33,4 @@ The final submission records actual pass/fail results from repeated runs so reli
 
 ## Run-to-run variation
 
-When the open-weights model is enabled, we will execute the same synthesis task multiple times and record whether the factual claim, cited evidence set and safety boundary remain stable. The deterministic pattern result is the source of truth; LLM variation may affect wording only.
+When the open-weights model is enabled, we execute the same synthesis task multiple times and record whether the factual claim, cited evidence set and safety boundary remain stable. The deterministic pattern result is the source of truth; LLM variation may affect wording only.
