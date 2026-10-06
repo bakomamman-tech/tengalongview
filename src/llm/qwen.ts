@@ -21,18 +21,21 @@ function validateModelWording(text: string, pattern: PatternResult): void {
     /\bwarrant/i,
     /\brecommend/i,
     /\bintervention\b/i,
+    /\bexpert\b/i,
+    /\bevaluation/i,
+    /\bprofessional judgment\b/i,
   ];
 
   if (forbidden.some((rule) => rule.test(text))) {
-    throw new Error("Open-weights wording introduced unsupported metrics, urgency, or recommendations.");
+    throw new Error("Open-weights wording introduced unsupported metrics, authority, urgency, or recommendations.");
   }
 
   if (!text.toLowerCase().includes(pattern.subject.toLowerCase())) {
     throw new Error("Open-weights wording omitted the subject.");
   }
 
-  if (!/assessment/i.test(text)) {
-    throw new Error("Open-weights wording must mention the assessment evidence basis.");
+  if (!/sourced assessment/i.test(text)) {
+    throw new Error('Open-weights wording must explicitly say "sourced assessment" or "sourced assessments".');
   }
 
   if (pattern.kind === "sustained_decline" && !/(declin|decreas|downward)/i.test(text)) {
@@ -67,7 +70,8 @@ export async function explainPattern(pattern: PatternResult): Promise<PatternExp
 
 Hard rules:
 - Preserve the meaning of the core statement exactly.
-- Mention that the conclusion is based on sourced assessments.
+- Use the phrase "sourced assessments" to describe the evidence basis.
+- Do not mention experts, evaluations, professional judgment, or any authority that is not present in the input.
 - Do not introduce any numeric metric, percentage, percentile, average, trend statistic, threshold, urgency, concern level, intervention, or recommendation.
 - Do not diagnose, rank, label, assign a track, or prescribe a career.
 - Do not invent evidence.
