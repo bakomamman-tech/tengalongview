@@ -36,6 +36,7 @@ export async function draftProfileTool(input: { learnerId: string; subject: stri
     ...draft,
     generatedBy: explanation.generatedBy,
     model: explanation.model,
+    ...(explanation.fallbackReason ? { fallbackReason: explanation.fallbackReason } : {}),
   };
 
   if (explanation.generatedBy === "open_weights") {
@@ -43,6 +44,12 @@ export async function draftProfileTool(input: { learnerId: string; subject: stri
       "open_weights_qwen_generate",
       { learnerId: input.learnerId, subject: input.subject, pattern },
       { statement: draft.statement, model: explanation.model },
+    );
+  } else if (explanation.generatedBy === "deterministic_fallback") {
+    await logTool(
+      "open_weights_qwen_fallback",
+      { learnerId: input.learnerId, subject: input.subject, pattern, model: explanation.model },
+      { statement: draft.statement, reason: explanation.fallbackReason },
     );
   }
 
