@@ -3,8 +3,9 @@ import { assertNoRankingOrTrack } from "../domain/claims.js";
 
 export interface PatternExplanation {
   text: string;
-  generatedBy: "deterministic" | "open_weights";
+  generatedBy: "deterministic" | "open_weights" | "deterministic_fallback";
   model: string | null;
+  fallbackReason?: string;
 }
 
 function validateModelWording(text: string, pattern: PatternResult): void {
@@ -79,30 +80,39 @@ Hard rules:
 
 Safe input JSON: ${JSON.stringify(safeInput)}`;
 
-  const res = await fetch(`${base}/api/chat`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
+  try {
+    const res = await fetch(`${base}/api/chat`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        model,
+        stream: false,
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      throw new Error(`Open-weights model request failed: ${res.status}${detail ? ` — ${detail}` : ""}`);
+    }
+
+    const body = await res.json() as { message?: { content?: string } };
+    const text = body.message?.content?.trim();
+    if (!text) throw new Error("Open-weights model returned an empty response.");
+
+    validateModelWording(text, pattern);
+
+    return {
+      text,
+      generatedBy: "open_weights",
       model,
-      stream: false,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw new Error(`Open-weights model request failed: ${res.status}${detail ? ` — ${detail}` : ""}`);
+    };
+  } catch (error) {
+    return {
+      text: pattern.statement,
+      generatedBy: "deterministic_fallback",
+      model,
+      fallbackReason: error instanceof Error ? error.message : String(error),
+    };
   }
-
-  const body = await res.json() as { message?: { content?: string } };
-  const text = body.message?.content?.trim();
-  if (!text) throw new Error("Open-weights model returned an empty response.");
-
-  validateModelWording(text, pattern);
-
-  return {
-    text,
-    generatedBy: "open_weights",
-    model,
-  };
 }
