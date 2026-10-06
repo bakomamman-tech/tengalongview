@@ -8,18 +8,18 @@ TengaLongView is an MCP-powered agentic AI prototype for the African Agentic AI 
 
 ## Current milestone
 
-This repository is the first working scaffold. It contains:
+This repository contains:
 
 - a custom Learner Profile MCP server with four tools, using the MCP TypeScript SDK v2;
 - the official community Filesystem MCP server as our borrowed MCP integration for controlled imported-record access;
-- a LangGraph workflow that plans, calls tools, handles insufficient evidence, and pauses at a human gate;
+- a LangGraph workflow that plans, calls tools, handles recoverable evidence gaps, and pauses at a human gate;
 - PostgreSQL-backed learner evidence, drafts, approvals, and MCP audit logs;
 - synthetic, intentionally imperfect learner records;
-- optional open-weights Qwen inference through Ollama;
+- an optional open-weights Qwen2.5 1.5B task through Ollama;
 - a minimal teacher demo UI;
-- tests for longitudinal pattern detection and safety rules.
+- tests and runtime evaluations for longitudinal pattern detection and safety rules.
 
-## Run in one command
+## Deterministic one-command run
 
 ```bash
 docker compose up --build
@@ -27,7 +27,31 @@ docker compose up --build
 
 Then open `http://localhost:3000`.
 
-The default Docker demo runs deterministically with `USE_OPEN_WEIGHTS_LLM=false` so a reviewer can run it without first downloading a model. To demonstrate the required open-weights model task, run Ollama locally, pull a compatible Qwen model, and set `USE_OPEN_WEIGHTS_LLM=true` plus `OLLAMA_MODEL` before starting the app.
+The default demo keeps `USE_OPEN_WEIGHTS_LLM=false` so a reviewer can run the core MCP/LangGraph workflow without first downloading a model.
+
+## Open-weights Qwen run
+
+TengaLongView includes a Compose overlay that runs Ollama locally and switches profile-statement wording to `qwen2.5:1.5b`.
+
+Start Ollama:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.qwen.yml up -d ollama
+```
+
+Pull the model once:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.qwen.yml exec ollama ollama pull qwen2.5:1.5b
+```
+
+Then run the full stack with the open-weights model enabled:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.qwen.yml up --build
+```
+
+A successful drafted profile includes `generatedBy: "open_weights"` and `model: "qwen2.5:1.5b"`. The Qwen generation is also written to the PostgreSQL audit log as `open_weights_qwen_generate`.
 
 ## MCP servers
 
