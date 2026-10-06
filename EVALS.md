@@ -16,7 +16,7 @@ The final submission records actual pass/fail results from repeated runs so reli
 | 10 | Teacher approves draft | Commit update and log approver + decision | Implemented; runtime verification pending |
 | 11 | Ranking/prescriptive text | Reject before commit | Implemented / unit-tested |
 | 12 | Missing imported Filesystem MCP note | Continue safely; record warning; do not fabricate | PASS — runtime: STU-003 missing note recovered with warning |
-| 13 | Open-weights Qwen draft generation | Produce teacher-facing wording while preserving the deterministic claim | PARTIAL — two runtime generations exposed unsupported wording; guards tightened; clean rerun pending |
+| 13 | Open-weights Qwen draft generation | Produce teacher-facing wording while preserving the deterministic claim | PASS — clean runtime after two documented wording failures and guard tightening |
 
 ## Observed runtime notes
 
@@ -26,6 +26,7 @@ The final submission records actual pass/fail results from repeated runs so reli
 - STU-003 Science had only two scored observations. The agent returned `insufficient_evidence`, created no draft, and therefore did not require a human decision.
 - STU-003 also exercised recoverable MCP failure: the borrowed Filesystem MCP server returned ENOENT for the missing source note, which the workflow recorded as a warning and continued from structured evidence.
 - First Qwen runtime generation correctly proved open-weights participation (`generatedBy: open_weights`, `model: qwen2.5:1.5b`) but incorrectly described directional consistency as minimal and percentages as percentiles. The first guard removed those metric errors. A second runtime generation then added unsupported authority language (`expert evaluations`). That second failure is also preserved. The model boundary now requires the literal evidence basis `sourced assessments` and rejects unsupported metrics, authority language, urgency and recommendations.
+- Third Qwen runtime generation passed: `Mathematics performance has shown a sustained decline across all five sourced assessments.` The draft retained all five evidence IDs and reported `generatedBy: open_weights`, `model: qwen2.5:1.5b`.
 
 ## Known failure to preserve honestly
 
