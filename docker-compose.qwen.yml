@@ -1,0 +1,19 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - tengalongview_ollama:/root/.ollama
+
+  app:
+    environment:
+      USE_OPEN_WEIGHTS_LLM: "true"
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: qwen2.5:1.5b
+    depends_on:
+      ollama:
+        condition: service_started
+
+volumes:
+  tengalongview_ollama:
