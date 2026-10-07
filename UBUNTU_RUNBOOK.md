@@ -79,8 +79,8 @@ After the deterministic MCP workflow works, install/run Ollama on the Ubuntu hos
 
 ```env
 USE_OPEN_WEIGHTS_LLM=true
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=qwen2.5:3b
+OLLAMA_BASE_URL=http://ollama:11434
+OLLAMA_MODEL=qwen2.5:1.5b
 ```
 
 For a Dockerized app on Linux, host-network access may need an explicit Compose host mapping or a dedicated Ollama service; verify the model endpoint before recording the challenge demo.

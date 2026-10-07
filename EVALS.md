@@ -52,7 +52,7 @@ When the open-weights model is enabled, we execute the same synthesis task multi
 
 Latest Docker runtime test:
 
-- 3 tests executed
-- 3 passed
+- 4 tests executed
+- 4 passed
 - 0 failed
-- Covered sustained-decline detection with evidence citations, insufficient-evidence refusal, and prohibited ranking/prescriptive-language blocking.
+- Covered sustained-decline detection with evidence citations, insufficient-evidence refusal, prohibited ranking/prescriptive-language blocking, and rejection of unsourced or fabricated evidence references.
