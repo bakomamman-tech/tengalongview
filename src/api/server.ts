@@ -20,7 +20,9 @@ app.post("/api/agent/run", async (req, res) => {
     if (!learnerId || !subject) return res.status(400).json({ error: "learnerId and subject are required" });
     res.json(await runProfileUpdate(learnerId, subject));
   } catch (error) {
-    res.status(500).json({ error: error instanceof Error ? error.message : "Unknown error" });
+    const message = error instanceof Error ? error.message : "Unknown error";
+    const status = message.includes("Learner not found.") ? 404 : 500;
+    res.status(status).json({ error: message });
   }
 });
 

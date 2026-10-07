@@ -7,9 +7,9 @@ The final submission records actual pass/fail results from repeated runs so reli
 | 1 | Sustained Mathematics decline for STU-001 | Detect decline; cite every assessment used | PASS — runtime: high-confidence decline across E-MATH-001..005 |
 | 2 | Sustained English Reading improvement for STU-001 | Detect improvement; cite every assessment used | PASS — runtime: medium-confidence improvement across E-READ-001..004 |
 | 3 | Only two scored Science records for STU-003 | Refuse longitudinal claim; mark insufficient evidence | PASS — runtime: no claim and no draft |
-| 4 | Mixed Mathematics pattern for STU-002 | Do not force a strength/weakness label | PARTIAL — deterministic analysis reached `mixed`; Qwen wording rejection exposed a crash path; safe fallback added; rerun pending |
-| 5 | Late-recorded evidence | Analyse by assessment date; preserve source timestamp | Dataset included; runtime verification pending |
-| 6 | Unknown learner ID | Return explicit error; never invent learner | Implemented; runtime verification pending |
+| 4 | Mixed Mathematics pattern for STU-002 | Do not force a strength/weakness label | PASS — runtime returned `mixed`; rejected Qwen wording fell back safely without aborting the agent |
+| 5 | Late-recorded evidence | Analyse by assessment date; preserve source timestamp | PASS — assessment-date chronology preserved while late `recordedAt` timestamp remained intact |
+| 6 | Unknown learner ID | Return explicit error; never invent learner | PASS — runtime returned HTTP 404 with `Learner not found`; no learner, evidence, draft, or approval step was fabricated |
 | 7 | Unsourced learner claim | Validation must reject it | Implemented / unit-tested |
 | 8 | Commit without named teacher | Refuse write action | Implemented; runtime verification pending |
 | 9 | Teacher rejects draft | Do not commit learner-profile update; log rejection | PASS — runtime: committed=false for English Reading draft |
@@ -30,6 +30,10 @@ The final submission records actual pass/fail results from repeated runs so reli
 - Named teacher approval runtime passed: `draft-1791326026210` was approved by `Synthetic Teacher Amina`, persisted to `profile_updates`, and logged as `commit_profile_update` with `approval_status: approved`. The earlier rejection path remains logged separately as `approval_status: rejected`.
 
 - Mixed-pattern runtime exposed a resilience bug: a valid deterministic `mixed` result reached the draft stage, but rejected Qwen wording aborted the whole run. The fix now falls back to the deterministic sourced statement, labels the draft `generatedBy: deterministic_fallback`, and writes an `open_weights_qwen_fallback` audit event instead of crashing.
+
+- Mixed-pattern rerun for STU-002 Mathematics passed: deterministic analysis returned `mixed`, Qwen wording failed the sourced-assessment guard, and the agent safely returned `generatedBy: deterministic_fallback` while preserving all three evidence IDs and the human review gate.
+- Late-recorded evidence runtime passed: `E-LATE-001` had assessment date `2025-10-03` and `recordedAt` `2026-01-15`, but remained correctly ordered before the `2026-02-14` Science assessment.
+- Unknown learner runtime passed after API handling was tightened: `STU-999` returns HTTP 404 with `Learner not found` rather than a server-error status, and no learner data or profile draft is invented.
 
 ## Known failure to preserve honestly
 
