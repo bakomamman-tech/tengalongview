@@ -93,9 +93,11 @@ Keep terminal output/screenshots showing:
 - custom MCP server starts;
 - Filesystem MCP tool call appears;
 - custom MCP tool calls appear;
+- the borrowed `filesystem.read_text_file` MCP call is persisted in `audit_logs` with input, output and timestamp;
 - sourced evidence IDs appear in the pattern/draft;
 - the human gate blocks persistence;
 - a named teacher approval commits the update;
+- a teacher-modified approval persists the exact final statement and named approver;
 - rejection does not commit;
 - at least one missing-data or insufficient-evidence run;
 - the Qwen open-weights task succeeds.

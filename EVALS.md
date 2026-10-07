@@ -17,6 +17,8 @@ The final submission records actual pass/fail results from repeated runs so reli
 | 11 | Ranking/prescriptive text | Reject before commit | PASS — runtime rejected both ranking and prescriptive pathway modifications and persisted no update |
 | 12 | Missing imported Filesystem MCP note | Continue safely; record warning; do not fabricate | PASS — runtime: STU-003 missing note recovered with warning |
 | 13 | Open-weights Qwen draft generation | Produce teacher-facing wording while preserving the deterministic claim | PASS — clean runtime after two documented wording failures and guard tightening |
+| 14 | Teacher modifies and approves sourced draft | Persist the named teacher, `modified` decision, and exact teacher-edited final statement | PASS — `draft-1791366018366` committed for STU-001 Mathematics by `Synthetic Teacher Amina`; PostgreSQL stored the exact modified statement and marked the draft approved |
+| 15 | Handwritten/scanned teacher-note ingestion | Extract readable evidence from a handwritten or scanned source document | FAIL — intentionally unresolved: this milestone supports imported text records only; OCR/document extraction for scans is not implemented and no learner claim should be inferred from unreadable evidence |
 
 ## Observed runtime notes
 
@@ -40,9 +42,13 @@ The final submission records actual pass/fail results from repeated runs so reli
 - Named-teacher gate runtime passed: approving a valid draft with a blank teacher name returned HTTP 400 with `Named teacher approval is required`, and the draft produced no `profile_updates` row.
 - Unsafe teacher-modification runtime passed: both `ranked among the top 5 in class` and `must become an engineer` were rejected at the commit boundary with HTTP 400, and neither statement was persisted.
 
+- Modify-and-approve runtime passed: `draft-1791366018366` for STU-001 Mathematics was modified and approved by `Synthetic Teacher Amina`. PostgreSQL recorded `decision: modified`, persisted the exact teacher-edited `final_statement`, and marked the source draft `approved`.
+
 ## Known failure to preserve honestly
 
-**Not fixed yet:** imported handwritten/scanned teacher notes are not interpreted in this milestone. The Filesystem MCP integration exposes imported text files, but OCR/document extraction quality for scans is not implemented. If text is unreadable or evidence cannot be traced, the safe behavior is to report insufficient evidence rather than infer a learner attribute.
+**Evaluation #15 remains intentionally unresolved:** imported handwritten/scanned teacher notes are not interpreted in this milestone. The Filesystem MCP integration exposes imported text files, but OCR/document extraction for scans is not implemented. This is recorded as a FAIL rather than presented as a capability the prototype does not have. If text is unreadable or evidence cannot be traced, the safe behavior is to report insufficient evidence rather than infer a learner attribute.
+
+A next iteration would add a local or institution-approved OCR/document-extraction stage, retain the original document reference, attach extraction confidence/provenance, and refuse learner-profile claims when the extracted text cannot be traced reliably to the source.
 
 ## Run-to-run variation
 

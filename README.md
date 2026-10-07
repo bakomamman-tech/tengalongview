@@ -53,6 +53,15 @@ docker compose -f docker-compose.yml -f docker-compose.qwen.yml up --build
 
 A successful drafted profile includes `generatedBy: "open_weights"` and `model: "qwen2.5:1.5b"`. The Qwen generation is also written to the PostgreSQL audit log as `open_weights_qwen_generate`.
 
+## Cost per run
+
+In the tested local Docker setup, the **external model/API cost is $0.00 per learner-profile run**.
+
+- The deterministic workflow uses no paid external model API.
+- The open-weights workflow runs `qwen2.5:1.5b` locally through Ollama, so it also incurs no per-token external API charge.
+- Host hardware, electricity and infrastructure costs are not monetised in this prototype and should not be interpreted as zero operational cost.
+- A warmed STU-001 Mathematics open-weights agent run was measured at approximately 3.36 seconds in the development environment; this is a runtime observation, not a production SLA.
+
 ## MCP servers
 
 ### 1. Custom Learner Profile MCP server
