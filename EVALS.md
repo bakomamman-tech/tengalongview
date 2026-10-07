@@ -10,7 +10,7 @@ The final submission records actual pass/fail results from repeated runs so reli
 | 4 | Mixed Mathematics pattern for STU-002 | Do not force a strength/weakness label | PASS — runtime returned `mixed`; rejected Qwen wording fell back safely without aborting the agent |
 | 5 | Late-recorded evidence | Analyse by assessment date; preserve source timestamp | PASS — assessment-date chronology preserved while late `recordedAt` timestamp remained intact |
 | 6 | Unknown learner ID | Return explicit error; never invent learner | PASS — runtime returned HTTP 404 with `Learner not found`; no learner, evidence, draft, or approval step was fabricated |
-| 7 | Unsourced learner claim | Validation must reject it | Implemented / unit-tested |
+| 7 | Unsourced learner claim | Validation must reject it | PASS — regression test rejects both zero-evidence claims and fabricated evidence references |
 | 8 | Commit without named teacher | Refuse write action | Implemented; runtime verification pending |
 | 9 | Teacher rejects draft | Do not commit learner-profile update; log rejection | PASS — runtime: committed=false for English Reading draft |
 | 10 | Teacher approves draft | Commit update and log approver + decision | PASS — runtime: profile update committed and named teacher recorded in audit log |
@@ -34,6 +34,8 @@ The final submission records actual pass/fail results from repeated runs so reli
 - Mixed-pattern rerun for STU-002 Mathematics passed: deterministic analysis returned `mixed`, Qwen wording failed the sourced-assessment guard, and the agent safely returned `generatedBy: deterministic_fallback` while preserving all three evidence IDs and the human review gate.
 - Late-recorded evidence runtime passed: `E-LATE-001` had assessment date `2025-10-03` and `recordedAt` `2026-01-15`, but remained correctly ordered before the `2026-02-14` Science assessment.
 - Unknown learner runtime passed after API handling was tightened: `STU-999` returns HTTP 404 with `Learner not found` rather than a server-error status, and no learner data or profile draft is invented.
+
+- Unsourced-claim regression passed: claims with no evidence IDs are rejected, profile draft creation is blocked, and fabricated references such as `E-NOT-REAL` are rejected as unknown evidence.
 
 ## Known failure to preserve honestly
 

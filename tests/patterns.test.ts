@@ -25,3 +25,43 @@ test("blocks ranking or prescriptive pathway language",()=>{
   assert.throws(()=>assertNoRankingOrTrack("The learner must become an engineer."));
   assert.doesNotThrow(()=>assertNoRankingOrTrack("The evidence shows sustained improvement across four assessments."));
 });
+
+test("rejects unsourced and fabricated evidence references", () => {
+  const evidence = [
+    mk("e1", 78, "2025-01-01"),
+    mk("e2", 82, "2025-03-01"),
+    mk("e3", 88, "2025-06-01"),
+  ];
+
+  const unsourced = {
+    learnerId: "S1",
+    subject: "Math",
+    kind: "sustained_improvement" as const,
+    confidence: "medium" as const,
+    statement: "Math performance shows sustained improvement.",
+    evidenceIds: [],
+    metrics: { observations: 3 },
+    warnings: [],
+  };
+
+  assert.deepEqual(
+    validateSourcedPattern(unsourced, evidence),
+    ["A learner claim must cite at least one evidence record."],
+  );
+
+  assert.throws(
+    () => createProfileDraft(unsourced),
+    /Unsourced learner claims are forbidden/,
+  );
+
+  const fabricatedReference = {
+    ...unsourced,
+    evidenceIds: ["E-NOT-REAL"],
+  };
+
+  assert.deepEqual(
+    validateSourcedPattern(fabricatedReference, evidence),
+    ["Unknown evidence reference: E-NOT-REAL"],
+  );
+});
+
