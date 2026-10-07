@@ -87,7 +87,7 @@ All learner names and records under `data/synthetic/` are fictional. Do not add 
 
 ## Architecture
 
-See [`ARCHITECTURE.md`](ARCHITECTURE.md) and [`docs/architecture.png`](docs/architecture.png).
+See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the implemented agent flow, MCP boundaries, model role, human gate, audit trail, and failure behavior.
 
 ## Evaluation
 
