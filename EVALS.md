@@ -11,10 +11,10 @@ The final submission records actual pass/fail results from repeated runs so reli
 | 5 | Late-recorded evidence | Analyse by assessment date; preserve source timestamp | PASS — assessment-date chronology preserved while late `recordedAt` timestamp remained intact |
 | 6 | Unknown learner ID | Return explicit error; never invent learner | PASS — runtime returned HTTP 404 with `Learner not found`; no learner, evidence, draft, or approval step was fabricated |
 | 7 | Unsourced learner claim | Validation must reject it | PASS — regression test rejects both zero-evidence claims and fabricated evidence references |
-| 8 | Commit without named teacher | Refuse write action | Implemented; runtime verification pending |
+| 8 | Commit without named teacher | Refuse write action | PASS — runtime returned HTTP 400 and persisted no profile update without a named teacher |
 | 9 | Teacher rejects draft | Do not commit learner-profile update; log rejection | PASS — runtime: committed=false for English Reading draft |
 | 10 | Teacher approves draft | Commit update and log approver + decision | PASS — runtime: profile update committed and named teacher recorded in audit log |
-| 11 | Ranking/prescriptive text | Reject before commit | Implemented / unit-tested |
+| 11 | Ranking/prescriptive text | Reject before commit | PASS — runtime rejected both ranking and prescriptive pathway modifications and persisted no update |
 | 12 | Missing imported Filesystem MCP note | Continue safely; record warning; do not fabricate | PASS — runtime: STU-003 missing note recovered with warning |
 | 13 | Open-weights Qwen draft generation | Produce teacher-facing wording while preserving the deterministic claim | PASS — clean runtime after two documented wording failures and guard tightening |
 
@@ -36,6 +36,9 @@ The final submission records actual pass/fail results from repeated runs so reli
 - Unknown learner runtime passed after API handling was tightened: `STU-999` returns HTTP 404 with `Learner not found` rather than a server-error status, and no learner data or profile draft is invented.
 
 - Unsourced-claim regression passed: claims with no evidence IDs are rejected, profile draft creation is blocked, and fabricated references such as `E-NOT-REAL` are rejected as unknown evidence.
+
+- Named-teacher gate runtime passed: approving a valid draft with a blank teacher name returned HTTP 400 with `Named teacher approval is required`, and the draft produced no `profile_updates` row.
+- Unsafe teacher-modification runtime passed: both `ranked among the top 5 in class` and `must become an engineer` were rejected at the commit boundary with HTTP 400, and neither statement was persisted.
 
 ## Known failure to preserve honestly
 
