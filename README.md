@@ -96,3 +96,10 @@ See [`EVALS.md`](EVALS.md). The evaluation set intentionally includes failure an
 ## License
 
 MIT.
+
+## Challenge submission and unedited video
+
+- See [SUBMISSION.md](SUBMISSION.md) for the Education Track's approximately 300-word description and links.
+- With `docker compose up --build` running, visit [http://localhost:3000/record-demo.html](http://localhost:3000/record-demo.html) for a local browser recorder. It records the **real application tab** in one continuous take, capped at 2 minutes 45 seconds, and downloads a WebM file. The recorder makes no claims about any run it did not record.
+- Show the `get_learner_history`, `analyse_longitudinal_pattern`, and `draft_profile_update` tool events; demonstrate named-teacher approval or modification; and, if time allows, show the insufficient-evidence case. Upload the unedited video publicly to YouTube or Vimeo.
+- **Not hosted:** this repository does not currently provide a hosted TengaLongView demo. The Docker Compose run is the documented demo path. The prototype is for fictional records only.
