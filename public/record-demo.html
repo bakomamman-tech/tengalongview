@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TengaLongView — genuine demo recording</title>
+<style>
+body{font:16px system-ui,Arial,sans-serif;background:#f4f7fb;color:#142337;margin:0;padding:32px}
+main{max-width:700px;margin:auto;background:white;padding:28px;border:1px solid #d4dfeb;border-radius:16px}
+h1{margin-top:0}button{padding:12px 16px;background:#164e9b;border:0;border-radius:9px;color:white;font-weight:700;cursor:pointer;margin:6px}
+button:disabled{opacity:.4}label{display:block;margin:16px 0}.small{color:#566b7b}
+#status{background:#ecf4ff;padding:14px;border-radius:8px}a{color:#164e9b}
+</style>
+</head>
+<body><main>
+<h1>Record a real TengaLongView run</h1>
+<p>This browser utility records the <strong>live TengaLongView application tab</strong> as an unedited WebM video. It cannot fabricate tool calls or simulate a run. The video is capped at 2 minutes 45 seconds to meet the challenge's under-three-minute rule.</p>
+<ol>
+<li>Open <a href="/" target="_blank" rel="noopener">TengaLongView</a> in a separate browser tab and keep it ready at the beginning of a run.</li>
+<li>Click <strong>Start recording</strong>. In the browser picker, choose <strong>Chrome Tab / Edge Tab</strong>, select your TengaLongView application tab and share it. Do not choose this recorder tab.</li>
+<li>Perform one actual STU-001 Mathematics run; show the MCP event log and the named teacher approval or modification. If time allows, run STU-003 Science to show the insufficient-evidence refusal.</li>
+<li>Return to this recorder tab and click <strong>Stop &amp; download</strong>, or let the 2:45 timer stop automatically. Upload the downloaded <code>.webm</code> video to YouTube or Vimeo and set visibility <strong>Public</strong>.</li>
+</ol>
+<label><input type="checkbox" id="mic"> Include microphone narration (browser will request microphone access)</label>
+<p id="status" role="status">Ready — no recording in progress.</p>
+<button id="start">Start recording</button><button id="stop" disabled>Stop &amp; download</button>
+<p class="small">Recording is done locally in your browser. Nothing is sent to another server by this utility. Do not record real student data, passwords, or private browser tabs.</p>
+</main>
+<script>
+const statusNode=document.getElementById('status'),start=document.getElementById('start'),stop=document.getElementById('stop');
+let recorder=null,displayStream=null,micStream=null,autoStop=null,startedAt=0,parts=[];
+const MAX_MS=165000;
+function report(message){statusNode.textContent=message}
+function shutTracks(){if(displayStream)for(const track of displayStream.getTracks())track.stop();if(micStream)for(const track of micStream.getTracks())track.stop();}
+function finish(){clearTimeout(autoStop);if(recorder && recorder.state!=='inactive')recorder.stop();else shutTracks();}
+start.onclick=async()=>{
+ try {
+  displayStream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:15},audio:false});
+  if(!displayStream.getVideoTracks().length)throw Error('No video was selected');
+  const streams=[...displayStream.getVideoTracks()];
+  if(document.getElementById('mic').checked){
+   try{micStream=await navigator.mediaDevices.getUserMedia({audio:true});streams.push(...micStream.getAudioTracks());}
+   catch(err){report('Microphone unavailable; recording silent video.');}
+  }
+  const combined=new MediaStream(streams);
+  const types=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+  const mimeType=types.find(t=>MediaRecorder.isTypeSupported(t));
+  recorder=new MediaRecorder(combined,mimeType?{mimeType}:undefined);parts=[];
+  recorder.ondataavailable=e=>{if(e.data.size)parts.push(e.data)};
+  recorder.onstop=()=>{
+   const blob=new Blob(parts,{type:recorder.mimeType||'video/webm'});
+   const url=URL.createObjectURL(blob);
+   const link=document.createElement('a');link.href=url;link.download='TengaLongView-unedited-live-demo.webm';
+   document.body.appendChild(link);link.click();link.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),60000);
+   shutTracks();start.disabled=false;stop.disabled=true;
+   report('Recording downloaded. Review the file, then upload publicly to YouTube/Vimeo. No submission has been made automatically.');
+  };
+  displayStream.getVideoTracks()[0].addEventListener('ended',finish,{once:true});
+  recorder.start(1000);startedAt=Date.now();start.disabled=true;stop.disabled=false;
+  report('RECORDING: Show real MCP events and the named-teacher gate. Maximum duration 2:45.');
+  autoStop=setTimeout(finish,MAX_MS);
+ }catch(err){shutTracks();start.disabled=false;stop.disabled=true;report('Recording could not start: '+err.message);}
+};
+stop.onclick=finish;
+</script>
+</body></html>
